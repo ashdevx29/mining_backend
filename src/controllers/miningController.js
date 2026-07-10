@@ -10,13 +10,26 @@ exports.startMining = async (req, res) => {
 
     if (activeSession) return res.status(400).json({ message: "Mining already active" });
 
+    const todayDate = new Date().toISOString().split('T')[0];
+    if (user.lastMiningDate === todayDate) {
+      return res.status(400).json({ message: "You have already started mining today. Come back tomorrow!" });
+    }
+
+    // Reward: 1 USDT base + 1 USDT per 3-level referral
+    const baseReward = 1;
+    const referralBonus = user.totalReferrals;
+    const totalReward = baseReward + referralBonus;
+
     const session = await MiningSession.create({
       user: user._id,
       startTime: new Date(),
       endTime: new Date(Date.now() + MINING_DURATION),
-      reward: user.level * 25 * 8, // 8 hours
+      reward: totalReward,
       isActive: true
     });
+
+    user.lastMiningDate = todayDate;
+    await user.save();
 
     res.json({ success: true, session });
   } catch (err) {
@@ -42,6 +55,21 @@ exports.claimMining = async (req, res) => {
     await session.save();
 
     res.json({ success: true, reward: session.reward });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.getStatus = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    const session = await MiningSession.findOne({ user: user._id, isActive: true });
+
+    if (!session) {
+      return res.json({ success: true, session: null });
+    }
+
+    res.json({ success: true, session });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

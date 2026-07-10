@@ -8,6 +8,9 @@ const userSchema = new mongoose.Schema({
   referralCode: { type: String, unique: true },
 
   referredBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  level1Referrer: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  level2Referrer: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  level3Referrer: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 
   // All referrals (Level 1 + 2 + 3)
   totalReferrals: { type: Number, default: 0 },
@@ -20,10 +23,12 @@ const userSchema = new mongoose.Schema({
 
   dailyStreak: { type: Number, default: 0 },
   lastCheckin: Date,
+  lastMiningDate: { type: String }, // Store YYYY-MM-DD
   level: { type: Number, default: 1 },
 
   walletAddress: String,
   achievements: [String],
+  role: { type: String, enum: ['user', 'admin'], default: 'user' },
 
   createdAt: { type: Date, default: Date.now }
 });

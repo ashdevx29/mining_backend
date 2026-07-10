@@ -11,6 +11,8 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth', require('./src/routes/authRoutes'));
+app.use('/api/admin', require('./src/routes/adminRoutes'));
+app.use('/api/mining', require('./src/routes/miningRoutes'));
 
 const PORT = process.env.PORT || 5000;
 
