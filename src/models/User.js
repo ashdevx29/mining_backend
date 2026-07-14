@@ -1,33 +1,31 @@
+// models/User.js
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-  fullName: String,
-  email: { type: String, unique: true, lowercase: true },
+  fullName: { type: String, trim: true },
+  email: { type: String, unique: true, lowercase: true, sparse: true },
   phone: String,
   password: String,
   referralCode: { type: String, unique: true },
-
+  // models/User.js me add karo
+  referralMiningBonus: { type: Number, default: 0 }, // Total extra USDT per mining
   referredBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   level1Referrer: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   level2Referrer: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   level3Referrer: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 
-  // All referrals (Level 1 + 2 + 3)
   totalReferrals: { type: Number, default: 0 },
-
-  // Daily Mining Boost
-  referralBoost: { type: Number, default: 0 }, // +1 USDT per referral
+  referralBoost: { type: Number, default: 0 }, // For mining bonus
 
   balance: { type: Number, default: 0 },
   totalMined: { type: Number, default: 0 },
 
   dailyStreak: { type: Number, default: 0 },
   lastCheckin: Date,
-  lastMiningDate: { type: String }, // Store YYYY-MM-DD
-  level: { type: Number, default: 1 },
+  lastMiningDate: String, // "YYYY-MM-DD"
 
   walletAddress: String,
-  achievements: [String],
+  achievements: [{ type: String }],
   role: { type: String, enum: ['user', 'admin'], default: 'user' },
 
   createdAt: { type: Date, default: Date.now }
@@ -37,48 +35,3 @@ module.exports = mongoose.model('User', userSchema);
 
 
 
-// const mongoose = require('mongoose');
-
-// const userSchema = new mongoose.Schema({
-//   fullName: String,
-//   email: { type: String, unique: true, lowercase: true },
-//   phone: String,
-//   password: String,
-//   referralCode: { type: String, unique: true },
-//   referredBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-//   balance: { type: Number, default: 0 },
-//   totalMined: { type: Number, default: 0 },
-//   referrals: { type: Number, default: 0 },
-//   dailyStreak: { type: Number, default: 0 },
-//   lastCheckin: Date,
-//   level: { type: Number, default: 1 },
-//   walletAddress: String,
-//   achievements: [String],
-//   createdAt: { type: Date, default: Date.now }
-// });
-
-// module.exports = mongoose.model('User', userSchema);
-
-
-
-
-
-
-
-
-// const mongoose = require('mongoose');
-
-// const userSchema = new mongoose.Schema({
-//   fullName: { type: String, required: true, trim: true },
-//   email: { 
-//     type: String, 
-//     required: true, 
-//     unique: true, 
-//     lowercase: true 
-//   },
-//   phone: { type: String, required: true },
-//   password: { type: String, required: true },
-//   createdAt: { type: Date, default: Date.now }
-// });
-
-// module.exports = mongoose.model('User', userSchema);

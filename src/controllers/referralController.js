@@ -1,37 +1,90 @@
+// controllers/referralController.js
 const User = require('../models/User');
 
-exports.addReferral = async (newUser, referrerCode) => {
-  if (!referrerCode) return newUser;
+exports.getReferralStats = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
-  const referrer = await User.findOne({ referralCode: referrerCode });
-  if (!referrer) return newUser;
+    const directReferrals = await User.find({ referredBy: user._id })
+      .select('fullName email createdAt balance')
+      .sort({ createdAt: -1 })
+      .limit(20);
 
-  newUser.referredBy = referrer._id;
+    // ✅ Web URL banaye (Local + Production)
+    const BASE_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const referralLink = `${BASE_URL}/signup?ref=${user.referralCode}`;
 
-  // Increase referrer's total referrals count
-  referrer.totalReferrals += 1;
-  referrer.referralBoost += 1;        // +1 USDT per referral
-
-  await referrer.save();
-  await newUser.save();
-
-  console.log(`New referral added. ${referrer.fullName} now has +${referrer.referralBoost} USDT/day boost`);
-
-  return newUser;
+    res.json({
+      success: true,
+      totalReferrals: user.totalReferrals || 0,
+      referralMiningBonus: user.referralMiningBonus || 0,
+      referralLink,           // ← Ab sahi web link aayega
+      referrals: directReferrals
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: err.message });
+  }
 };
 
-// Get user's total referral boost
-exports.getReferralBoost = async (userId) => {
-  const user = await User.findById(userId);
-  return user ? user.referralBoost : 0;
+exports.getReferralTree = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    res.json({
+      success: true,
+      level1: user.totalReferrals || 0,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
 };
 
 
 
+
+
+
+
+
+
+
+// // controllers/referralController.js
+// const User = require('../models/User');
 
 // exports.getReferralStats = async (req, res) => {
-//   const user = await User.findById(req.user.id).populate('referredBy');
-//   const directReferrals = await User.countDocuments({ referredBy: user._id });
-//   // Level 2, Level 3 logic bhi add kar sakte hain
-//   res.json({ referrals: directReferrals, earnings: user.referralEarnings || 0 });
+//   try {
+//     const user = await User.findById(req.user.id);
+//     if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+//     const directReferrals = await User.find({ referredBy: user._id })
+//       .select('fullName email createdAt balance')
+//       .sort({ createdAt: -1 })
+//       .limit(20);
+
+//     res.json({
+//       success: true,
+//       totalReferrals: user.totalReferrals || 0,
+//       referralBoost: user.referralBoost || 0,
+//       referralLink: `https://t.me/MineBot?start=${user.referralCode}`,
+//       referrals: directReferrals
+//     });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ success: false, message: err.message });
+//   }
+// };
+
+// exports.getReferralTree = async (req, res) => {
+//   try {
+//     const user = await User.findById(req.user.id);
+//     // You can expand this for full tree if needed
+//     res.json({
+//       success: true,
+//       level1: user.totalReferrals || 0,
+//       // level2, level3 logic can be added later
+//     });
+//   } catch (err) {
+//     res.status(500).json({ success: false, message: err.message });
+//   }
 // };
